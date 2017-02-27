@@ -40,6 +40,23 @@ void ThreadHeap::Stop(void){
     }
 }
 void ThreadHeap::SetThreadStackSize(int size){
+    int ret;
+    pthread_attr_t attr;
+    ret = pthread_attr_init(&attr);
+    if(ret != 0){
+        std::cout << "thread attr init error\n";
+    }
+    ret = pthread_attr_setstacksize(&attr, size);
+    if(ret != 0){
+        std::cout << "thread set  attr error\n";
+    }
+    //create 
+    //
+    ret = pthread_attr_destroy(&attr);
+    if(ret != 0){
+        std::cout << "delete attr error\n";
+    }
+
 
 }
 int main(int argc, char **argv){
