@@ -45,11 +45,27 @@ void ThreadHeap::Start(void){
     std::cout << "thread start ok->" << this->PThread <<std::endl;
 #else 
     int ret;
-    ret = pthread_create(&this->ThreadId, NULL, Thread2Loop, this);
+    pthread_attr_t ThreadAttr;
+    ret = pthread_attr_init(&ThreadAttr);
+    if(ret != 0){
+        std::cout << "thread attr init error\n";
+    }
+    ret = pthread_attr_setstacksize(&ThreadAttr, 1024 * 15);
+    //ret = pthread_attr_setheapsize(&ThreadAttr, 10240);
+    if(ret != 0){
+        std::cout << "thread set  attr error\n";
+    }
+    //create 
+    //
+    ret = pthread_create(&this->ThreadId, (const pthread_attr_t*)&ThreadAttr, Thread2Loop, this);
     if(ret != 0){
         std::cout << "thread create error\n";
     }
     std::cout << "thread start ok ->" << this->ThreadId << std::endl;
+    ret = pthread_attr_destroy(&ThreadAttr);
+    if(ret != 0){
+        std::cout << "delete attr error\n";
+    }
 #endif
 
 }
@@ -68,18 +84,18 @@ void ThreadHeap::Stop(void){
 }
 void ThreadHeap::SetThreadStackSize(int size){
     int ret;
-    pthread_attr_t attr;
-    ret = pthread_attr_init(&attr);
+    pthread_attr_t ThreadAttr;
+    ret = pthread_attr_init(&ThreadAttr);
     if(ret != 0){
         std::cout << "thread attr init error\n";
     }
-    ret = pthread_attr_setstacksize(&attr, size);
+    ret = pthread_attr_setstacksize(&ThreadAttr, size);
     if(ret != 0){
         std::cout << "thread set  attr error\n";
     }
     //create 
     //
-    ret = pthread_attr_destroy(&attr);
+    ret = pthread_attr_destroy(&ThreadAttr);
     if(ret != 0){
         std::cout << "delete attr error\n";
     }
