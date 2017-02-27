@@ -3,7 +3,8 @@
 #include <unistd.h>
 #include "threadheap.h"
 #include <iostream>
-#define USING_CXX_THREAD
+//#define USING_CXX_THREAD
+#ifdef USING_CXX_THREAD
 static void ThreadLoop(void *p){
     ThreadHeap *p_thread =  (ThreadHeap *)p;
     while(p_thread->ExitFlag.load() != true){
@@ -12,6 +13,17 @@ static void ThreadLoop(void *p){
     }
     std::cout << "thread exit\n";
 }
+#else
+static void *Thread2Loop(void *p){
+    ThreadHeap *p_thread =  (ThreadHeap *)p;
+    while(p_thread->ExitFlag.load() != true){
+        usleep(1000000);
+      //  std::cout << "thread runing\n";
+    }
+    std::cout << "thread exit\n";
+    return NULL;
+}
+#endif
 ThreadHeap::ThreadHeap(){
     this->PThread = NULL;
     this->ThreadId = -1;
@@ -25,18 +37,34 @@ ThreadHeap::~ThreadHeap(){
 }
 void ThreadHeap::Start(void){
     this->ExitFlag.store(false);
+#ifdef USING_CXX_THREAD 
     this->PThread = new std::thread(ThreadLoop, this);
     if(this->PThread == NULL){
         throw "new thread error\n";
     }
-    std::cout << "thread start ok\n";
+    std::cout << "thread start ok->" << this->PThread <<std::endl;
+#else 
+    int ret;
+    ret = pthread_create(&this->ThreadId, NULL, Thread2Loop, this);
+    if(ret != 0){
+        std::cout << "thread create error\n";
+    }
+    std::cout << "thread start ok ->" << this->ThreadId << std::endl;
+#endif
 
 }
 void ThreadHeap::Stop(void){
     this->ExitFlag.store(true);
-    this->PThread->join();
-    delete this->PThread;
+#ifdef USING_CXX_THREAD
+    if(this->PThread != NULL)
+        this->PThread->join();
+        delete this->PThread;
     this->PThread = NULL;
+#else
+    if(this->ThreadId >= 0)
+        pthread_join(this->ThreadId, NULL);
+    this->ThreadId = -1;
+#endif
     std::cout << "thread stop \n";
 }
 void ThreadHeap::SetThreadStackSize(int size){
