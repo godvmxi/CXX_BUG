@@ -1,66 +1,53 @@
 #include <thread>
 #include <atomic>
 #include <unistd.h>
-using namespace std;
-typedef struct {
-    thread *p_thread;
-    atomic_bool *exit_flag;
-}thread_handler_t;
-static void threadloop(void  *p , void *flag){
-    atomic_bool *exit = (atomic_bool *)p; 
-    while(exit->load() == false){
-        sleep(1);
-        printf("thread runing\n");
+#include "threadheap.h"
+#include <iostream>
+static void ThreadLoop(void *p){
+    ThreadHeap *p_thread =  (ThreadHeap *)p;
+    while(p_thread->ExitFlag.load() != true){
+        usleep(1000000);
+      //  std::cout << "thread runing\n";
     }
+    std::cout << "thread exit\n";
 }
+ThreadHeap::ThreadHeap(){
+    this->PThread = NULL;
 
-thread_handler_t *create_thread(void *p){ 
-    thread_handler_t *handler = (thread_handler_t *) malloc(sizeof(thread_handler_t));
-    if(handler == NULL){
-        printf("create handler errror\n");
-        return NULL;
-    }
-    atomic_bool *flag = new atomic_bool();
-    handler->exit_flag =  flag;
-    flag->store(false);
-    thread *p_thread= new thread(p, flag);
-    if(p_thread == NULL){
-        return NULL;
-    }
-    handler->p_thread = p_thread;
-    return handler;
 }
-void delete_thread(thread_handler_t **p){
-    thread_handler_t *p_thread = *p;
-    p_thread->exit_flag->store(true);
-    p_thread->p_thread->join();
-    delete p_thread->exit_flag;
-    free(p_thread);
-    *p = NULL;
-}
+ThreadHeap::~ThreadHeap(){
+    this->Delete();
 
+}
+void ThreadHeap::Create(void){
+    this->ExitFlag.store(false);
+    this->PThread = new std::thread(ThreadLoop, this);
+    if(this->PThread == NULL){
+        throw "new thread error\n";
+    }
+    std::cout << "thread create ok\n";
+
+}
+void ThreadHeap::Delete(void){
+    if(this->PThread){
+        this->ExitFlag.store(true);
+        this->PThread->join();
+        delete this->PThread;
+        this->PThread = NULL;
+        std::cout << "thread delete \n";
+    }
+}
 int main(int argc, char **argv){
     printf("hello heap\n");
-    thread_handler_t  *p_thread_1;
-    p_thread_1 =  create_thread((void *)threadloop);
-    printf("thread create result ->%p\n", p_thread_1);
-    sleep(5);
-    delete_thread(&p_thread_1);
-    printf("thread delete result ->%p\n", p_thread_1);
-    sleep(5);
-    
-    p_thread_1 =  create_thread((void *)threadloop);
-    printf("thread create result ->%p\n", p_thread_1);
-    sleep(5);
-    delete_thread(&p_thread_1);
-    printf("thread delete result ->%p\n", p_thread_1);
-    sleep(5);
+    ThreadHeap threadtest ;
+    getchar();
 
-    p_thread_1 =  create_thread((void *)threadloop);
-    printf("thread create result ->%p\n", p_thread_1);
-    sleep(5);
-    delete_thread(&p_thread_1);
-    printf("thread delete result ->%p\n", p_thread_1);
-    sleep(5);
-    return 1;
+    while(1){
+        threadtest.Create();
+        sleep(5);
+        threadtest.Delete();
+        sleep(5);
+
+    }
+
 }
