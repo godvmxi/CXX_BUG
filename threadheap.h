@@ -6,8 +6,9 @@ class ThreadHeap{
     public :
         ThreadHeap();
         ~ThreadHeap();
-        void Create(void);
-        void Delete(void);
+        void SetThreadStackSize(int size);
+        void Start(void);
+        void Stop(void);
         std::atomic_bool ExitFlag;
     private:
         std::thread *PThread;

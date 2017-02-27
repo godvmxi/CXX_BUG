@@ -13,40 +13,62 @@ static void ThreadLoop(void *p){
 }
 ThreadHeap::ThreadHeap(){
     this->PThread = NULL;
+    std::cout << "class init\n";
 
 }
 ThreadHeap::~ThreadHeap(){
-    this->Delete();
+    this->Stop();
+    std::cout << "thread delete\n";
 
 }
-void ThreadHeap::Create(void){
+void ThreadHeap::Start(void){
     this->ExitFlag.store(false);
     this->PThread = new std::thread(ThreadLoop, this);
     if(this->PThread == NULL){
         throw "new thread error\n";
     }
-    std::cout << "thread create ok\n";
+    std::cout << "thread start ok\n";
 
 }
-void ThreadHeap::Delete(void){
+void ThreadHeap::Stop(void){
     if(this->PThread){
         this->ExitFlag.store(true);
         this->PThread->join();
         delete this->PThread;
         this->PThread = NULL;
-        std::cout << "thread delete \n";
+        std::cout << "thread stop \n";
     }
+}
+void ThreadHeap::SetThreadStackSize(int size){
+
 }
 int main(int argc, char **argv){
     printf("hello heap\n");
-    ThreadHeap threadtest ;
-    getchar();
-
+    ThreadHeap *p_thread = NULL;
+    char c = '0';
+    std::cout << "Press any key to contiue\n";
+    
     while(1){
-        threadtest.Create();
-        sleep(5);
-        threadtest.Delete();
-        sleep(5);
+        c = getchar();
+        switch(c){
+            case 'b':
+                p_thread->Start();
+                break;
+            case 'e':
+                p_thread->Stop();
+                break;
+            case 'n':
+                p_thread  = new ThreadHeap() ;
+                break;
+            case 'd':
+                delete p_thread;
+                p_thread = NULL;
+                break;
+            default :
+                if(c != '\n')
+                    std::cout << "input cmd ->" << c <<std::endl;
+
+        }
 
     }
 
