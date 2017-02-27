@@ -61,8 +61,7 @@ void ThreadHeap::Stop(void){
         delete this->PThread;
     this->PThread = NULL;
 #else
-    if(this->ThreadId >= 0)
-        pthread_join(this->ThreadId, NULL);
+    pthread_join(this->ThreadId, NULL);
     this->ThreadId = -1;
 #endif
     std::cout << "thread stop \n";
