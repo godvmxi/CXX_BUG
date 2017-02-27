@@ -12,4 +12,5 @@ class ThreadHeap{
         std::atomic_bool ExitFlag;
     private:
         std::thread *PThread;
+        pthread_t ThreadId;
 };

@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include "threadheap.h"
 #include <iostream>
+#define USING_CXX_THREAD
 static void ThreadLoop(void *p){
     ThreadHeap *p_thread =  (ThreadHeap *)p;
     while(p_thread->ExitFlag.load() != true){
@@ -13,6 +14,7 @@ static void ThreadLoop(void *p){
 }
 ThreadHeap::ThreadHeap(){
     this->PThread = NULL;
+    this->ThreadId = -1;
     std::cout << "class init\n";
 
 }
@@ -31,13 +33,11 @@ void ThreadHeap::Start(void){
 
 }
 void ThreadHeap::Stop(void){
-    if(this->PThread){
-        this->ExitFlag.store(true);
-        this->PThread->join();
-        delete this->PThread;
-        this->PThread = NULL;
-        std::cout << "thread stop \n";
-    }
+    this->ExitFlag.store(true);
+    this->PThread->join();
+    delete this->PThread;
+    this->PThread = NULL;
+    std::cout << "thread stop \n";
 }
 void ThreadHeap::SetThreadStackSize(int size){
     int ret;
